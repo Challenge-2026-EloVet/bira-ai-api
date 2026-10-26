@@ -58,24 +58,32 @@ def health_check():
 @app.post("/api/ai/analyze", response_model=AnalysisResponse)
 def analyze_consultation(payload: AnalysisRequest):
     logger.info(f"Iniciando análise clínica de IA para o Pet ID: {payload.pet.id} ({payload.pet.nome})")
+    logger.info("Payload recebido: %s", payload.model_dump_json(indent=2))
 
     # PASSO 1: Busca de conhecimento epidemiológico baseado em regras (RAG)
     contexto_cientifico = get_breed_context(payload.pet.raca, payload.pet.peso_kg)
 
     if MOCK_MODE:
         logger.warning("GEMINI_API_KEY não configurada. Executando inteligência simulada em modo Mock de Alta Fidelidade.")
-        return simulate_high_fidelity_output(payload, contexto_cientifico, origem="mock")
+        resultado = simulate_high_fidelity_output(payload, contexto_cientifico, origem="mock")
+        logger.info("JSON de saída (mock): %s", resultado.model_dump_json(indent=2))
+        return resultado
 
     # PASSO 2: Inferência real com Structured Output; qualquer falha cai no fallback
     try:
         resultado = call_gemini(payload, contexto_cientifico)
+        logger.info("JSON de entrada: %s", payload.model_dump_json(indent=2))
+        logger.info("JSON de saída (gemini): %s", resultado.model_dump_json(indent=2))
         return AnalysisResponse(**resultado.model_dump(), origem="gemini")
     except ValidationError as e:
         logger.error(f"Resposta do Gemini fora do contrato AnalysisOutput: {e.error_count()} erro(s). Acionando fallback.")
     except Exception as e:
         logger.error(f"Falha na integração com o Google Gemini ({type(e).__name__}): {e}. Acionando fallback.")
 
-    return simulate_high_fidelity_output(payload, contexto_cientifico, origem="fallback")
+    resultado_fallback = simulate_high_fidelity_output(payload, contexto_cientifico, origem="fallback")
+    logger.info("JSON de entrada: %s", payload.model_dump_json(indent=2))
+    logger.info("JSON de saída (fallback): %s", resultado_fallback.model_dump_json(indent=2))
+    return resultado_fallback
 
 
 def call_gemini(payload: AnalysisRequest, contexto_cientifico: str) -> AnalysisOutput:
