@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 # Dados que chegam do Portal do Veterinário (Input)
 class SoapInput(BaseModel):
@@ -19,6 +19,7 @@ class PetInput(BaseModel):
 class AnalysisRequest(BaseModel):
     pet: PetInput
     soap: SoapInput
+    veterinario: Optional[str] = Field(None, example="Dra. Helena Costa", description="Responsável pelo atendimento")
 
 # Estrutura de dados que a IA DEVE retornar (Structured Output)
 class TreatmentTask(BaseModel):
@@ -27,8 +28,12 @@ class TreatmentTask(BaseModel):
 
 class AnalysisOutput(BaseModel):
     diagnostico_provavel: str = Field(..., description="Análise simplificada do caso para o Veterinário")
-    risco_epidemiologico: str = Field(..., description="Nível de risco: BAIXO, MÉDIO ou ALTO baseado na raça/peso")
+    risco_epidemiologico: Literal["BAIXO", "MÉDIO", "ALTO"] = Field(..., description="Nível de risco baseado na raça/peso")
     sugestoes_exames: List[str] = Field(..., description="Exames adicionais sugeridos com base científica")
     mensagem_acolhimento_tutor: str = Field(..., description="Texto afetuoso e leigo explicando a situação para o tutor")
     checklist_tratamento: List[TreatmentTask] = Field(..., description="Passo a passo terapêutico para o WhatsApp")
     checklist_prevencao: List[str] = Field(..., description="Recomendações de rotina e prevenção ligadas à raça")
+
+# Resposta da API: o Structured Output + a origem da inferência (rastreabilidade do fallback)
+class AnalysisResponse(AnalysisOutput):
+    origem: Literal["gemini", "mock", "fallback"] = Field(..., description="gemini = inferência real; mock = sem chave configurada; fallback = Gemini indisponível")
