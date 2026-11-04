@@ -123,10 +123,6 @@ Os cenários abaixo foram executados diretamente sobre `simulate_high_fidelity_o
 | Base de conhecimento por raça no prompt | Proposto (base epidemiológica) | ✅ Implementado (3 raças) |
 | Integração com o Portal do Veterinário | Proposto | ✅ Implementado |
 | Contingência quando o LLM falha | — | ✅ Implementado (adicionado nesta sprint) |
-| Envio do plano ao tutor via WhatsApp e app | Proposto | 🔜 Próximo passo |
-| Mensageria (RabbitMQ) para picos de demanda | Proposto | 🔜 Próximo passo |
-| Histórico e logs de IoB em MongoDB | Proposto | 🔜 Próximo passo |
-| Monitoramento contínuo de dados comportamentais (IoB) | Proposto | 🔜 Próximo passo |
 
 Nesta entrega priorizamos o **núcleo de valor**: gerar, com segurança, o plano de cuidados a partir da consulta. Os demais componentes evoluem a partir desse núcleo.
 
